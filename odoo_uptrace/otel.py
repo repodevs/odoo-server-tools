@@ -31,17 +31,6 @@ IGNORE_TRACING_RESPONSE_CLASS_NAME = [
 ]
 
 
-def init_uptrace(service_name):
-    uptrace.configure_opentelemetry(
-        dsn=config.get(
-            "uptrace_dsn", ""
-        ),  # get config from `uptrace_dsn` or env UPTRACE_DSN
-        service_name=service_name,
-        service_version=odoo_version,
-    )
-    return oteltrace.get_tracer("uptrace", uptrace.__version__)
-
-
 class OdooUptrace:
     """
     Tracer that can trace certain requests to Odoo app.
@@ -50,8 +39,12 @@ class OdooUptrace:
 
     def __init__(self, tracer=None):
 
+        self._service_name = config.get("uptrace_service_name", "odoo.webservice")
+        self._uptrace_dsn = config.get("uptrace_dsn", "")
+        self._uptrace_version = uptrace.__version__
+
         if not callable(tracer):
-            self.__tracer = tracer
+            self.__tracer = oteltrace.get_tracer("uptrace", self._uptrace_version)
             self.__tracer_getter = None
         else:
             self.__tracer = None
@@ -59,11 +52,19 @@ class OdooUptrace:
 
         self._current_spans = {}
 
+        # Init Uptrace
+        uptrace.configure_opentelemetry(
+            dsn=self._uptrace_dsn,
+            service_name=self._service_name,
+            service_version=odoo_version,
+        )
+        # print(f"Uptrace Configured: {self._service_name} - {self._uptrace_dsn}")
+
     @property
     def tracer(self):
         if not self.__tracer:
             if self.__tracer_getter is None:
-                return oteltrace.get_tracer()
+                return oteltrace.get_tracer(self._service_name, self._uptrace_version)
             self.__tracer = self.__tracer_getter()
         return self.__tracer
 
