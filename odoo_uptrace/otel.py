@@ -147,16 +147,12 @@ class OdooUptrace:
 
         if response is not None:
             if response and isinstance(response, Response):
-                rmsg = response.data
-                if ignore_response_data:
-                    rmsg = "<ignored>"
+                rmsg = "<ignored>" if ignore_response_data else response.data
                 span.set_attribute("http.status_code", response.status_code)
                 response.direct_passthrough = False
                 span.set_attribute("odoo.respose.data", rmsg)
             else:
-                rmsg = response
-                if ignore_response_data:
-                    rmsg = "<ignored>"
+                rmsg = "<ignored>" if ignore_response_data else response
                 span.set_attribute("http.status_code", 200)
                 span.set_attribute("odoo.respose.data", str(rmsg))
 

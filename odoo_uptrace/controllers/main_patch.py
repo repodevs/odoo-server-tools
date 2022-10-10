@@ -22,7 +22,10 @@ from ..otel import OdooUptrace, init_uptrace
 tracing = OdooUptrace(init_uptrace("odoo.webservice"))
 
 # ----------------------------------------------------------
-# Odoo Web web Controllers Patch
+# Odoo Web Controllers Patch
+# Based on: addons/web/controllers/main.py
+# Author: Anang Aji Rahmawan (https://github.com/0yik)
+# Modifier: Edi Santoso (https://github.com/repodevs)
 # ----------------------------------------------------------
 
 
