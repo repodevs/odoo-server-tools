@@ -13,6 +13,7 @@ from opentelemetry.trace import (
     TraceFlags,
     Link,
 )
+from opentelemetry.trace.propagation.tracecontext import TraceContextTextMapPropagator
 
 IGNORE_TRACING_RESPONSE_CLASS_NAME = [
     # 'HomePatch',
@@ -104,14 +105,10 @@ class OdooUptrace:
             headers[k.lower()] = v
 
         try:
-            # TODO: extract baggage
-            # ctx = oteltrace.get_current_span().get_span_context()
-            # traceId = int(headers.get('traceid',0))
-            # spanId = int(headers.get('spanid', 0))
-            # parentContext = get_parent_context(trace_id=traceId, span_id=spanId)
+            parentContext = TraceContextTextMapPropagator().extract(headers)
             span = self.tracer.start_span(
                 operation_name,
-                # context=parentContext,
+                context=parentContext,
                 # links=[Link(ctx)],
                 # links=[Link(parentContext)],
             )
@@ -200,14 +197,3 @@ class OdooUptrace:
             pass
         finally:
             return cls_name
-
-
-def get_parent_context(trace_id, span_id):
-    parent_context = SpanContext(
-        trace_id=trace_id,
-        span_id=span_id,
-        is_remote=True,
-        # trace_flags=TraceFlags.SAMPLED
-    )
-    # return parent_context
-    return oteltrace.set_span_in_context(NonRecordingSpan(parent_context))
